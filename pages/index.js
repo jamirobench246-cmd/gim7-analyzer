@@ -343,9 +343,13 @@ export default function Home() {
       setStep('transcribing')
       setStatusMsg('Transcribing your audio file — this may take a minute...')
       try {
-        const form = new FormData()
-        form.append('audio', audioFile)
-        const res = await fetch('/api/transcribe', { method: 'POST', body: form })
+        const arrayBuffer = await audioFile.arrayBuffer()
+const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
+const res = await fetch('/api/transcribe', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ audioBase64: base64, mimeType: audioFile.type }),
+})
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || 'Transcription failed')
         finalTranscript = data.transcript
